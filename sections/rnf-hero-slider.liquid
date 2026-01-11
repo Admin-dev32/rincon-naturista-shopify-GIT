@@ -50,7 +50,11 @@
           {% assign bg_mobile = block.settings.bg_image_mobile %}
           {% assign bg_desktop_style = '' %}
           {% assign bg_mobile_style = '' %}
+          {% assign bg_desktop_url = '' %}
+          {% assign bg_mobile_url = '' %}
+          {% assign debug_bg_status = 'blank' %}
           {% if bg_desktop != blank %}
+            {% assign debug_bg_status = 'set' %}
             {% assign bg_desktop_url = bg_desktop | image_url: width: 2400 %}
             {% assign bg_desktop_style = "url('" | append: bg_desktop_url | append: "')" %}
           {% else %}
@@ -71,7 +75,21 @@
             <div
               class="rnf-hero-slider__media"
               style="background-image: {{ bg_desktop_style }}; --rnf-slide-bg-desktop: {{ bg_desktop_style }}; --rnf-slide-bg-mobile: {{ bg_mobile_style }};"
-            ></div>
+            >
+              {% if bg_desktop != blank %}
+                <picture class="rnf-hero-slider__media-picture">
+                  {% if bg_mobile != blank %}
+                    <source media="(max-width: 749px)" srcset="{{ bg_mobile_url }}">
+                  {% endif %}
+                  <img
+                    class="rnf-hero-slider__media-img"
+                    src="{{ bg_desktop_url }}"
+                    alt=""
+                    loading="lazy"
+                  >
+                </picture>
+              {% endif %}
+            </div>
             <div class="rnf-hero-slider__overlay" aria-hidden="true"></div>
             <div class="rnf-hero-slider__content rnf-align-h-{{ block.settings.text_position_horizontal }} rnf-align-v-{{ block.settings.text_position_vertical }} rnf-layout-{{ block.settings.layout }}">
               <div class="rnf-hero-slider__grid">
@@ -117,6 +135,17 @@
               </div>
               {% if request.design_mode and bg_desktop == blank %}
                 <p class="rnf-hero-slider__note">Add a desktop background image for this slide.</p>
+              {% endif %}
+              {% if request.design_mode and forloop.first %}
+                <div class="rnf-hero-slider__debug" role="status">
+                  <strong>RNF Debug:</strong>
+                  Desktop BG is {{ debug_bg_status }}.
+                  {% if bg_desktop_url != blank %}
+                    URL: {{ bg_desktop_url | slice: 0, 60 }}{% if bg_desktop_url.size > 60 %}…{% endif %}
+                  {% else %}
+                    URL: n/a
+                  {% endif %}
+                </div>
               {% endif %}
             </div>
           </li>
