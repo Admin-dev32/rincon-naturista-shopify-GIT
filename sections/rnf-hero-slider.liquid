@@ -1,6 +1,13 @@
-{% liquid
-  assign has_slides = section.blocks.size > 0
-%}
+{%- comment -%}
+  Guardrails:
+  - Avoid comparisons inside assign; use if/endif for Theme Check compatibility.
+  - Do not use rgba() defaults for "type":"color" settings in schema.
+  - Apply alpha via Liquid filters (color_modify) in style variables.
+{%- endcomment -%}
+{% assign has_slides = false %}
+{% if section.blocks.size > 0 %}
+  {% assign has_slides = true %}
+{% endif %}
 
 <section
   id="rnf-hero-slider-{{ section.id }}"
@@ -41,13 +48,27 @@
         {% for block in section.blocks %}
           {% assign bg_desktop = block.settings.bg_image_desktop %}
           {% assign bg_mobile = block.settings.bg_image_mobile %}
+          {% assign bg_desktop_style = '' %}
+          {% assign bg_mobile_style = '' %}
+          {% if bg_desktop != blank %}
+            {% assign bg_desktop_url = bg_desktop | image_url: width: 2400 %}
+            {% assign bg_desktop_style = "url('" | append: bg_desktop_url | append: "')" %}
+          {% else %}
+            {% assign bg_desktop_style = "linear-gradient(135deg, rgba(74,29,116,0.75), rgba(22,99,22,0.65))" %}
+          {% endif %}
+          {% if bg_mobile != blank %}
+            {% assign bg_mobile_url = bg_mobile | image_url: width: 1400 %}
+            {% assign bg_mobile_style = "url('" | append: bg_mobile_url | append: "')" %}
+          {% else %}
+            {% assign bg_mobile_style = bg_desktop_style %}
+          {% endif %}
           <li
             class="rnf-hero-slider__slide{% if forloop.first %} is-active{% endif %}"
             data-rnf-slide
             data-slide-index="{{ forloop.index0 }}"
             {{ block.shopify_attributes }}
           >
-            <div class="rnf-hero-slider__media" style="--rnf-slide-bg-desktop: url('{{ bg_desktop | image_url: width: 2400 }}');{% if bg_mobile != blank %} --rnf-slide-bg-mobile: url('{{ bg_mobile | image_url: width: 1400 }}');{% endif %}"></div>
+            <div class="rnf-hero-slider__media" style="--rnf-slide-bg-desktop: {{ bg_desktop_style }}; --rnf-slide-bg-mobile: {{ bg_mobile_style }};"></div>
             <div class="rnf-hero-slider__overlay" aria-hidden="true"></div>
             <div class="rnf-hero-slider__content rnf-align-h-{{ block.settings.text_position_horizontal }} rnf-align-v-{{ block.settings.text_position_vertical }} rnf-layout-{{ block.settings.layout }}">
               <div class="rnf-hero-slider__grid">
