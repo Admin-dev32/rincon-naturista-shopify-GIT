@@ -68,7 +68,10 @@
             data-slide-index="{{ forloop.index0 }}"
             {{ block.shopify_attributes }}
           >
-            <div class="rnf-hero-slider__media" style="--rnf-slide-bg-desktop: {{ bg_desktop_style }}; --rnf-slide-bg-mobile: {{ bg_mobile_style }};"></div>
+            <div
+              class="rnf-hero-slider__media"
+              style="background-image: {{ bg_desktop_style }}; --rnf-slide-bg-desktop: {{ bg_desktop_style }}; --rnf-slide-bg-mobile: {{ bg_mobile_style }};"
+            ></div>
             <div class="rnf-hero-slider__overlay" aria-hidden="true"></div>
             <div class="rnf-hero-slider__content rnf-align-h-{{ block.settings.text_position_horizontal }} rnf-align-v-{{ block.settings.text_position_vertical }} rnf-layout-{{ block.settings.layout }}">
               <div class="rnf-hero-slider__grid">
@@ -112,6 +115,9 @@
                   {% endif %}
                 </div>
               </div>
+              {% if request.design_mode and bg_desktop == blank %}
+                <p class="rnf-hero-slider__note">Add a desktop background image for this slide.</p>
+              {% endif %}
             </div>
           </li>
         {% endfor %}
