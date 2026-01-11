@@ -20,8 +20,8 @@
     --rnf-text-color: {{ section.settings.text_color }};
     --rnf-heading-color: {{ section.settings.heading_color }};
     --rnf-button-text: {{ section.settings.button_text_color }};
-    --rnf-dot-color: {{ section.settings.dot_color }};
-    --rnf-dot-active: {{ section.settings.dot_active_color }};
+    --rnf-dot-color: {{ section.settings.dot_color | color_modify: 'alpha', 0.7 }};
+    --rnf-dot-active: {{ section.settings.dot_active_color | color_modify: 'alpha', 1 }};
     --rnf-transition: {{ section.settings.transition_speed_ms }}ms;
     --rnf-zoom-strength: {{ section.settings.zoom_strength | times: 0.01 | plus: 1 }};
   "
@@ -127,6 +127,11 @@
   {% endif %}
 </section>
 
+{%- comment -%}
+  Schema guardrails:
+  - Do not use rgba() defaults for settings with type "color".
+  - Use Liquid color_modify for alpha (see --rnf-dot-color / --rnf-dot-active above).
+{%- endcomment -%}
 {% schema %}
 {
   "name": "RNF Hero Slider",
@@ -283,7 +288,7 @@
       "type": "color",
       "id": "dot_color",
       "label": "Dot color",
-      "default": "rgba(255,255,255,0.7)"
+      "default": "#FFFFFF"
     },
     {
       "type": "color",
