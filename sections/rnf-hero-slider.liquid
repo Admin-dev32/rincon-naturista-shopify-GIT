@@ -3,10 +3,15 @@
   - Avoid comparisons inside assign; use if/endif for Theme Check compatibility.
   - Do not use rgba() defaults for "type":"color" settings in schema.
   - Apply alpha via Liquid filters (color_modify) in style variables.
+  - If using gradient overlays, configure with a non-color setting (text) and validate output.
 {%- endcomment -%}
 {% assign has_slides = false %}
 {% if section.blocks.size > 0 %}
   {% assign has_slides = true %}
+{% endif %}
+{% assign overlay_background = section.settings.overlay_color %}
+{% if section.settings.overlay_style == 'gradient' %}
+  {% assign overlay_background = section.settings.overlay_gradient %}
 {% endif %}
 
 <section
@@ -19,7 +24,7 @@
   style="
     --rnf-height-desktop: {{ section.settings.height_desktop }}px;
     --rnf-height-mobile: {{ section.settings.height_mobile }}px;
-    --rnf-overlay-color: {{ section.settings.overlay_color }};
+    --rnf-overlay-color: {{ overlay_background }};
     --rnf-overlay-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
     --rnf-max-width: {% case section.settings.content_max_width %}{% when '1200' %}1200px{% when '1400' %}1400px{% else %}100%{% endcase %};
     --rnf-primary: {{ section.settings.primary_purple }};
@@ -35,12 +40,6 @@
 >
   {{ 'rnf-hero-slider.css' | asset_url | stylesheet_tag }}
   <script src="{{ 'rnf-hero-slider.js' | asset_url }}" defer></script>
-
-  {% if section.settings.heading != blank %}
-    <div class="rnf-hero-slider__heading" style="max-width: var(--rnf-max-width);">
-      <h2>{{ section.settings.heading }}</h2>
-    </div>
-  {% endif %}
 
   {% if has_slides %}
     <div class="rnf-hero-slider__viewport" aria-roledescription="carousel">
@@ -187,6 +186,7 @@
   Schema guardrails:
   - Do not use rgba() defaults for settings with type "color".
   - Use Liquid color_modify for alpha (see --rnf-dot-color / --rnf-dot-active above).
+  - Use a text/gradient setting for overlay gradients (avoid invalid color defaults).
 {%- endcomment -%}
 {% schema %}
 {
@@ -194,12 +194,6 @@
   "tag": "section",
   "class": "section",
   "settings": [
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "Heading",
-      "default": "Descubre bienestar diario"
-    },
     {
       "type": "range",
       "id": "height_desktop",
@@ -221,10 +215,27 @@
       "default": 480
     },
     {
+      "type": "select",
+      "id": "overlay_style",
+      "label": "Overlay style",
+      "default": "solid",
+      "options": [
+        { "value": "solid", "label": "Solid color" },
+        { "value": "gradient", "label": "Gradient" }
+      ]
+    },
+    {
       "type": "color",
       "id": "overlay_color",
       "label": "Overlay color",
       "default": "#000000"
+    },
+    {
+      "type": "text",
+      "id": "overlay_gradient",
+      "label": "Overlay gradient",
+      "default": "linear-gradient(135deg, rgba(74,29,116,0.65), rgba(22,99,22,0.55))",
+      "info": "Example: linear-gradient(135deg, rgba(74,29,116,0.65), rgba(22,99,22,0.55))"
     },
     {
       "type": "range",
