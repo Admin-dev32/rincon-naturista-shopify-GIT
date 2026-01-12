@@ -89,12 +89,12 @@
                   >
                 </picture>
               {% endif %}
+              <div
+                class="rnf-hero-slider__overlay"
+                aria-hidden="true"
+                style="background: {{ overlay_background }};"
+              ></div>
             </div>
-            <div
-              class="rnf-hero-slider__overlay"
-              aria-hidden="true"
-              style="background: {{ overlay_background }};"
-            ></div>
             <div class="rnf-hero-slider__content rnf-align-h-{{ block.settings.text_position_horizontal }} rnf-align-v-{{ block.settings.text_position_vertical }} rnf-layout-{{ block.settings.layout }}">
               <div class="rnf-hero-slider__grid">
                 <div class="rnf-hero-slider__text rnf-text-{{ block.settings.text_align }}{% if block.settings.text_bg_enable %} rnf-text-bg{% endif %}" style="--rnf-text-bg-opacity: {{ block.settings.text_bg_opacity | divided_by: 100.0 }};">
