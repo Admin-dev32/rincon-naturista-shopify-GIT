@@ -54,6 +54,18 @@
   z-index: 0;
 }
 
+.rnf-hero-slider__media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--rnf-slide-bg);
+  background-size: cover;
+  background-position: center;
+  filter: blur(18px);
+  opacity: 0.45;
+  transform: scale(1.05);
+}
+
 .rnf-hero-slider__media-picture,
 .rnf-hero-slider__media-img {
   position: absolute;
@@ -64,7 +76,7 @@
 }
 
 .rnf-hero-slider__media-img {
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
