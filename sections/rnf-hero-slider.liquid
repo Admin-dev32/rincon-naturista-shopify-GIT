@@ -40,8 +40,6 @@
         {% for block in section.blocks %}
           {% assign bg_desktop = block.settings.bg_image_desktop %}
           {% assign bg_mobile = block.settings.bg_image_mobile %}
-          {% assign bg_desktop_style = '' %}
-          {% assign bg_mobile_style = '' %}
           {% assign bg_desktop_url = '' %}
           {% assign bg_mobile_url = '' %}
           {% assign bg_fit = block.settings.bg_fit | default: 'cover' %}
@@ -53,26 +51,22 @@
           {% endif %}
           {% if bg_desktop != blank %}
             {% assign bg_desktop_url = bg_desktop | image_url: width: 2400 %}
-            {% assign bg_desktop_style = "url('" | append: bg_desktop_url | append: "')" %}
-          {% else %}
-            {% assign bg_desktop_style = "linear-gradient(135deg, rgba(74,29,116,0.75), rgba(22,99,22,0.65))" %}
           {% endif %}
           {% if bg_mobile != blank %}
             {% assign bg_mobile_url = bg_mobile | image_url: width: 1400 %}
-            {% assign bg_mobile_style = "url('" | append: bg_mobile_url | append: "')" %}
-          {% else %}
-            {% assign bg_mobile_style = bg_desktop_style %}
           {% endif %}
+          {% assign desktop_ar = bg_desktop.aspect_ratio | default: 1.7778 %}
+          {% assign mobile_ar = bg_mobile.aspect_ratio | default: desktop_ar %}
           <li
             class="rnf-hero-slider__slide{% if forloop.first %} is-active{% endif %}"
             data-rnf-slide
             data-slide-index="{{ forloop.index0 }}"
             {{ block.shopify_attributes }}
-            style="--rnf-overlay-bg: {{ slide_overlay_bg }}; --rnf-overlay-opacity: {{ slide_overlay_opacity }};"
+            style="--rnf-overlay-bg: {{ slide_overlay_bg }}; --rnf-overlay-opacity: {{ slide_overlay_opacity }}; --rnf-ar-desktop: {{ desktop_ar }}; --rnf-ar-mobile: {{ mobile_ar }};"
           >
             <div
               class="rnf-hero-slider__media rnf-fit-{{ bg_fit }} rnf-fit-mobile-{{ bg_fit_mobile }}"
-              style="background-image: {{ bg_desktop_style }}; --rnf-slide-bg: {{ bg_desktop_style }}; --rnf-slide-bg-desktop: {{ bg_desktop_style }}; --rnf-slide-bg-mobile: {{ bg_mobile_style }}; --rnf-slide-bg-size-mobile: {{ bg_fit_mobile }}; background-size: {{ bg_fit }}; background-position: center; background-repeat: no-repeat;"
+              style="--rnf-slide-bg-size-mobile: {{ bg_fit_mobile }};"
             >
               {% if bg_desktop != blank %}
                 <picture class="rnf-hero-slider__media-picture">
@@ -82,7 +76,7 @@
                   <img
                     class="rnf-hero-slider__media-img"
                     src="{{ bg_desktop_url }}"
-                    alt=""
+                    alt="{{ bg_desktop.alt | escape }}"
                     loading="lazy"
                   >
                 </picture>
