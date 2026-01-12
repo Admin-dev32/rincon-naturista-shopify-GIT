@@ -46,19 +46,10 @@
           {% assign bg_mobile_url = '' %}
           {% assign bg_fit = block.settings.bg_fit | default: 'cover' %}
           {% assign bg_fit_mobile = block.settings.bg_fit_mobile | default: bg_fit %}
-          {% assign slide_overlay_style = section.settings.overlay_style %}
-          {% assign slide_overlay_opacity = section.settings.overlay_opacity | divided_by: 100.0 %}
-          {% assign slide_overlay_bg = section.settings.overlay_color %}
-          {% if section.settings.overlay_style == 'gradient' %}
-            {% assign slide_overlay_bg = "linear-gradient(" | append: section.settings.overlay_gradient_angle | append: "deg, " | append: section.settings.overlay_gradient_start | append: ", " | append: section.settings.overlay_gradient_end | append: ")" %}
-          {% endif %}
-          {% if block.settings.use_custom_overlay %}
-            {% assign slide_overlay_style = block.settings.overlay_style %}
-            {% assign slide_overlay_opacity = block.settings.overlay_opacity | divided_by: 100.0 %}
-            {% assign slide_overlay_bg = block.settings.overlay_color %}
-            {% if block.settings.overlay_style == 'gradient' %}
-              {% assign slide_overlay_bg = "linear-gradient(" | append: block.settings.overlay_gradient_angle | append: "deg, " | append: block.settings.overlay_gradient_start | append: ", " | append: block.settings.overlay_gradient_end | append: ")" %}
-            {% endif %}
+          {% assign slide_overlay_opacity = block.settings.overlay_opacity | divided_by: 100.0 %}
+          {% assign slide_overlay_bg = block.settings.overlay_color %}
+          {% if block.settings.overlay_style == 'gradient' %}
+            {% assign slide_overlay_bg = "linear-gradient(" | append: block.settings.overlay_gradient_angle | append: "deg, " | append: block.settings.overlay_gradient_start | append: ", " | append: block.settings.overlay_gradient_end | append: ")" %}
           {% endif %}
           {% if bg_desktop != blank %}
             {% assign bg_desktop_url = bg_desktop | image_url: width: 2400 %}
@@ -210,54 +201,6 @@
       "unit": "px",
       "label": "Mobile height",
       "default": 480
-    },
-    {
-      "type": "select",
-      "id": "overlay_style",
-      "label": "Overlay style",
-      "default": "solid",
-      "options": [
-        { "value": "solid", "label": "Solid color" },
-        { "value": "gradient", "label": "Gradient" }
-      ]
-    },
-    {
-      "type": "color",
-      "id": "overlay_color",
-      "label": "Overlay color",
-      "default": "#000000"
-    },
-    {
-      "type": "color",
-      "id": "overlay_gradient_start",
-      "label": "Gradient start color",
-      "default": "#4A1D74"
-    },
-    {
-      "type": "color",
-      "id": "overlay_gradient_end",
-      "label": "Gradient end color",
-      "default": "#166316"
-    },
-    {
-      "type": "range",
-      "id": "overlay_gradient_angle",
-      "min": 0,
-      "max": 180,
-      "step": 5,
-      "unit": "deg",
-      "label": "Gradient angle",
-      "default": 135
-    },
-    {
-      "type": "range",
-      "id": "overlay_opacity",
-      "min": 0,
-      "max": 70,
-      "step": 1,
-      "unit": "%",
-      "label": "Overlay opacity",
-      "default": 25
     },
     {
       "type": "select",
@@ -414,12 +357,6 @@
           ]
         },
         {
-          "type": "checkbox",
-          "id": "use_custom_overlay",
-          "label": "Use custom overlay for this slide",
-          "default": false
-        },
-        {
           "type": "select",
           "id": "overlay_style",
           "label": "Overlay style",
@@ -452,7 +389,7 @@
           "id": "overlay_gradient_angle",
           "min": 0,
           "max": 180,
-          "step": 5,
+          "step": 1,
           "unit": "deg",
           "label": "Gradient angle",
           "default": 135

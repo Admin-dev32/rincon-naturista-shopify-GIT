@@ -73,7 +73,10 @@
         {% assign collection = block.settings.collection %}
         {% if collection != blank %}
           {% assign panel_index = panel_index | plus: 1 %}
-          {% assign is_active_panel = panel_index == default_index %}
+          {% assign is_active_panel = false %}
+          {% if panel_index == default_index %}
+            {% assign is_active_panel = true %}
+          {% endif %}
           {% assign sort = block.settings.sort %}
           {% assign products_list = collection.products %}
           {% if sort == 'price_low_high' %}
