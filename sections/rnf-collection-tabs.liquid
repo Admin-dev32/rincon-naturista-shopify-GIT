@@ -10,64 +10,76 @@
   {% endif %}
 {% endfor %}
 
-{% if valid_count > 0 %}
-  {% assign default_index = section.settings.default_collection_index | default: 1 %}
-  {% if default_index < 1 or default_index > valid_count %}
-    {% assign default_index = 1 %}
+{% assign default_index = section.settings.default_collection_index | default: 1 %}
+{% if valid_count < 1 %}
+  {% assign default_index = 1 %}
+{% elsif default_index < 1 or default_index > valid_count %}
+  {% assign default_index = 1 %}
+{% endif %}
+
+<section
+  id="rnf-collection-tabs-{{ section.id }}"
+  class="rnf-collection-tabs"
+  data-rnf-collection-tabs
+  data-underline="{{ section.settings.tab_underline_active }}"
+  style="
+    --rnf-columns-desktop: {{ section.settings.columns_desktop }};
+    --rnf-columns-mobile: {{ section.settings.columns_mobile }};
+  "
+>
+  {{ 'rnf-collection-tabs.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'rnf-collection-tabs.js' | asset_url }}" defer></script>
+
+  {% if section.settings.heading != blank %}
+    <div class="rnf-collection-tabs__heading">
+      <h2>{{ section.settings.heading }}</h2>
+    </div>
   {% endif %}
 
-  <section
-    id="rnf-collection-tabs-{{ section.id }}"
-    class="rnf-collection-tabs"
-    data-rnf-collection-tabs
-    data-underline="{{ section.settings.tab_underline_active }}"
-    style="
-      --rnf-columns-desktop: {{ section.settings.columns_desktop }};
-      --rnf-columns-mobile: {{ section.settings.columns_mobile }};
-    "
-  >
-    {{ 'rnf-collection-tabs.css' | asset_url | stylesheet_tag }}
-    <script src="{{ 'rnf-collection-tabs.js' | asset_url }}" defer></script>
-
-    {% if section.settings.heading != blank %}
-      <div class="rnf-collection-tabs__heading">
-        <h2>{{ section.settings.heading }}</h2>
-      </div>
-    {% endif %}
-
-    <div class="rnf-collection-tabs__tablist-wrapper">
-      <div
-        class="rnf-collection-tabs__tablist rnf-align-{{ section.settings.tabs_alignment }}"
-        role="tablist"
-        aria-label="Collection tabs"
-        data-rnf-tabs
-        {% if section.settings.enable_swipe_tabs %}data-rnf-swipe-tabs{% endif %}
-      >
-        {% assign tab_index = 0 %}
-        {% for block in section.blocks %}
-          {% assign collection = block.settings.collection %}
-          {% if collection != blank %}
-            {% assign tab_index = tab_index | plus: 1 %}
-            {% assign tab_label = block.settings.tab_label | default: collection.title %}
-            <button
-              class="rnf-collection-tabs__tab{% if tab_index == default_index %} is-active{% endif %}"
-              type="button"
-              role="tab"
-              aria-selected="{% if tab_index == default_index %}true{% else %}false{% endif %}"
-              aria-controls="rnf-collection-tabpanel-{{ section.id }}-{{ tab_index }}"
-              id="rnf-collection-tab-{{ section.id }}-{{ tab_index }}"
-              data-rnf-tab
-              data-rnf-tab-index="{{ tab_index }}"
-              {{ block.shopify_attributes }}
-            >
-              {{ tab_label }}
-            </button>
-          {% endif %}
-        {% endfor %}
-      </div>
+  <div class="rnf-collection-tabs__tablist-wrapper">
+    <div
+      class="rnf-collection-tabs__tablist rnf-align-{{ section.settings.tabs_alignment }}"
+      role="tablist"
+      aria-label="Collection tabs"
+      data-rnf-tabs
+      {% if section.settings.enable_swipe_tabs %}data-rnf-swipe-tabs{% endif %}
+    >
+      {% assign tab_index = 0 %}
+      {% for block in section.blocks %}
+        {% assign collection = block.settings.collection %}
+        {% if collection != blank %}
+          {% assign tab_index = tab_index | plus: 1 %}
+          {% assign tab_label = block.settings.tab_label | default: collection.title %}
+          <button
+            class="rnf-collection-tabs__tab{% if tab_index == default_index %} is-active{% endif %}"
+            type="button"
+            role="tab"
+            aria-selected="{% if tab_index == default_index %}true{% else %}false{% endif %}"
+            aria-controls="rnf-collection-tabpanel-{{ section.id }}-{{ tab_index }}"
+            id="rnf-collection-tab-{{ section.id }}-{{ tab_index }}"
+            data-rnf-tab
+            data-rnf-tab-index="{{ tab_index }}"
+            {{ block.shopify_attributes }}
+          >
+            {{ tab_label }}
+          </button>
+        {% else %}
+          {% assign tab_label = block.settings.tab_label | default: 'Select a collection' %}
+          <button
+            class="rnf-collection-tabs__tab"
+            type="button"
+            aria-disabled="true"
+            {{ block.shopify_attributes }}
+          >
+            {{ tab_label }}
+          </button>
+        {% endif %}
+      {% endfor %}
     </div>
+  </div>
 
-    <div class="rnf-collection-tabs__panels">
+  <div class="rnf-collection-tabs__panels">
+    {% if valid_count > 0 %}
       {% assign panel_index = 0 %}
       {% for block in section.blocks %}
         {% assign collection = block.settings.collection %}
@@ -148,13 +160,13 @@
           </div>
         {% endif %}
       {% endfor %}
-    </div>
-  </section>
-{% elsif request.design_mode %}
-  <div class="rnf-collection-tabs__empty">
-    <p>Add collection blocks to display tabs.</p>
+    {% elsif request.design_mode %}
+      <div class="rnf-collection-tabs__empty">
+        <p>RNF Collection Tabs: Add blocks and select a collection in each block.</p>
+      </div>
+    {% endif %}
   </div>
-{% endif %}
+</section>
 
 {% schema %}
 {
