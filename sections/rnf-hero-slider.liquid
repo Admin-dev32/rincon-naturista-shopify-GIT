@@ -10,11 +10,9 @@
   {% assign has_slides = true %}
 {% endif %}
 {% assign overlay_alpha = section.settings.overlay_opacity | divided_by: 100.0 %}
-{% assign overlay_background = section.settings.overlay_color | color_modify: 'alpha', overlay_alpha %}
+{% assign overlay_background = section.settings.overlay_color %}
 {% if section.settings.overlay_style == 'gradient' %}
-  {% assign overlay_start = section.settings.overlay_gradient_start | color_modify: 'alpha', overlay_alpha %}
-  {% assign overlay_end = section.settings.overlay_gradient_end | color_modify: 'alpha', overlay_alpha %}
-  {% assign overlay_background = "linear-gradient(" | append: section.settings.overlay_gradient_angle | append: "deg, " | append: overlay_start | append: ", " | append: overlay_end | append: ")" %}
+  {% assign overlay_background = "linear-gradient(" | append: section.settings.overlay_gradient_angle | append: "deg, " | append: section.settings.overlay_gradient_start | append: ", " | append: section.settings.overlay_gradient_end | append: ")" %}
 {% endif %}
 
 <section
@@ -92,7 +90,7 @@
               <div
                 class="rnf-hero-slider__overlay"
                 aria-hidden="true"
-                style="background: {{ overlay_background }};"
+                style="background: {{ overlay_background }}; opacity: {{ overlay_alpha }};"
               ></div>
             </div>
             <div class="rnf-hero-slider__content rnf-align-h-{{ block.settings.text_position_horizontal }} rnf-align-v-{{ block.settings.text_position_vertical }} rnf-layout-{{ block.settings.layout }}">
