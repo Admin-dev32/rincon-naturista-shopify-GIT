@@ -11,8 +11,10 @@
 {% endif %}
 {% assign overlay_alpha = section.settings.overlay_opacity | divided_by: 100.0 %}
 {% assign overlay_background = section.settings.overlay_color %}
+{% assign overlay_style_attr = "background-color: " | append: section.settings.overlay_color | append: "; opacity: " | append: overlay_alpha | append: ";" %}
 {% if section.settings.overlay_style == 'gradient' %}
   {% assign overlay_background = "linear-gradient(" | append: section.settings.overlay_gradient_angle | append: "deg, " | append: section.settings.overlay_gradient_start | append: ", " | append: section.settings.overlay_gradient_end | append: ")" %}
+  {% assign overlay_style_attr = "background-image: " | append: overlay_background | append: "; opacity: " | append: overlay_alpha | append: ";" %}
 {% endif %}
 
 <section
@@ -90,7 +92,7 @@
               <div
                 class="rnf-hero-slider__overlay"
                 aria-hidden="true"
-                style="background: {{ overlay_background }}; opacity: {{ overlay_alpha }};"
+                style="{{ overlay_style_attr }}"
               ></div>
             </div>
             <div class="rnf-hero-slider__content rnf-align-h-{{ block.settings.text_position_horizontal }} rnf-align-v-{{ block.settings.text_position_vertical }} rnf-layout-{{ block.settings.layout }}">
@@ -147,6 +149,10 @@
                   {% else %}
                     URL: n/a
                   {% endif %}
+                  <br>
+                  Overlay style: {{ section.settings.overlay_style }},
+                  opacity: {{ overlay_alpha }},
+                  background: {{ overlay_background | slice: 0, 60 }}{% if overlay_background.size > 60 %}…{% endif %}
                 </div>
               {% endif %}
             </div>
