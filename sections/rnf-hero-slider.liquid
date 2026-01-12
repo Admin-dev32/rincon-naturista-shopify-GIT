@@ -1,0 +1,542 @@
+{%- comment -%}
+  Guardrails:
+  - Avoid comparisons inside assign; use if/endif for Theme Check compatibility.
+  - Do not use rgba() defaults for "type":"color" settings in schema.
+  - Apply alpha via Liquid filters (color_modify) in style variables.
+  - Build gradients from color settings to keep schema defaults valid.
+{%- endcomment -%}
+{% assign has_slides = false %}
+{% if section.blocks.size > 0 %}
+  {% assign has_slides = true %}
+{% endif %}
+{% assign overlay_alpha = section.settings.overlay_opacity | divided_by: 100.0 %}
+{% assign overlay_background = section.settings.overlay_color %}
+{% assign overlay_style_attr = "background-color: " | append: section.settings.overlay_color | append: "; opacity: " | append: overlay_alpha | append: ";" %}
+{% if section.settings.overlay_style == 'gradient' %}
+  {% assign overlay_background = "linear-gradient(" | append: section.settings.overlay_gradient_angle | append: "deg, " | append: section.settings.overlay_gradient_start | append: ", " | append: section.settings.overlay_gradient_end | append: ")" %}
+  {% assign overlay_style_attr = "background-image: " | append: overlay_background | append: "; opacity: " | append: overlay_alpha | append: ";" %}
+{% endif %}
+
+<section
+  id="rnf-hero-slider-{{ section.id }}"
+  class="rnf-hero-slider"
+  data-rnf-slider
+  data-autoplay="{{ section.settings.autoplay }}"
+  data-autoplay-seconds="{{ section.settings.autoplay_seconds }}"
+  data-enable-zoom="{{ section.settings.enable_zoom }}"
+  style="
+    --rnf-height-desktop: {{ section.settings.height_desktop }}px;
+    --rnf-height-mobile: {{ section.settings.height_mobile }}px;
+    --rnf-max-width: {% case section.settings.content_max_width %}{% when '1200' %}1200px{% when '1400' %}1400px{% else %}100%{% endcase %};
+    --rnf-primary: {{ section.settings.primary_purple }};
+    --rnf-accent: {{ section.settings.accent_green }};
+    --rnf-text-color: {{ section.settings.text_color }};
+    --rnf-heading-color: {{ section.settings.heading_color }};
+    --rnf-button-text: {{ section.settings.button_text_color }};
+    --rnf-dot-color: {{ section.settings.dot_color | color_modify: 'alpha', 0.7 }};
+    --rnf-dot-active: {{ section.settings.dot_active_color | color_modify: 'alpha', 1 }};
+    --rnf-transition: {{ section.settings.transition_speed_ms }}ms;
+    --rnf-zoom-strength: {{ section.settings.zoom_strength | times: 0.01 | plus: 1 }};
+  "
+>
+  {{ 'rnf-hero-slider.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'rnf-hero-slider.js' | asset_url }}" defer></script>
+
+  {% if has_slides %}
+    <div class="rnf-hero-slider__viewport" aria-roledescription="carousel">
+      <ul class="rnf-hero-slider__track" data-rnf-track>
+        {% for block in section.blocks %}
+          {% assign bg_desktop = block.settings.bg_image_desktop %}
+          {% assign bg_mobile = block.settings.bg_image_mobile %}
+          {% assign bg_desktop_style = '' %}
+          {% assign bg_mobile_style = '' %}
+          {% assign bg_desktop_url = '' %}
+          {% assign bg_mobile_url = '' %}
+          {% assign debug_bg_status = 'blank' %}
+          {% if bg_desktop != blank %}
+            {% assign debug_bg_status = 'set' %}
+            {% assign bg_desktop_url = bg_desktop | image_url: width: 2400 %}
+            {% assign bg_desktop_style = "url('" | append: bg_desktop_url | append: "')" %}
+          {% else %}
+            {% assign bg_desktop_style = "linear-gradient(135deg, rgba(74,29,116,0.75), rgba(22,99,22,0.65))" %}
+          {% endif %}
+          {% if bg_mobile != blank %}
+            {% assign bg_mobile_url = bg_mobile | image_url: width: 1400 %}
+            {% assign bg_mobile_style = "url('" | append: bg_mobile_url | append: "')" %}
+          {% else %}
+            {% assign bg_mobile_style = bg_desktop_style %}
+          {% endif %}
+          <li
+            class="rnf-hero-slider__slide{% if forloop.first %} is-active{% endif %}"
+            data-rnf-slide
+            data-slide-index="{{ forloop.index0 }}"
+            {{ block.shopify_attributes }}
+          >
+            <div
+              class="rnf-hero-slider__media"
+              style="background-image: {{ bg_desktop_style }}; --rnf-slide-bg-desktop: {{ bg_desktop_style }}; --rnf-slide-bg-mobile: {{ bg_mobile_style }};"
+            >
+              {% if bg_desktop != blank %}
+                <picture class="rnf-hero-slider__media-picture">
+                  {% if bg_mobile != blank %}
+                    <source media="(max-width: 749px)" srcset="{{ bg_mobile_url }}">
+                  {% endif %}
+                  <img
+                    class="rnf-hero-slider__media-img"
+                    src="{{ bg_desktop_url }}"
+                    alt=""
+                    loading="lazy"
+                  >
+                </picture>
+              {% endif %}
+            </div>
+            <div
+              class="rnf-hero-slider__overlay"
+              aria-hidden="true"
+              style="{{ overlay_style_attr }}"
+            ></div>
+            <div class="rnf-hero-slider__content rnf-align-h-{{ block.settings.text_position_horizontal }} rnf-align-v-{{ block.settings.text_position_vertical }} rnf-layout-{{ block.settings.layout }}">
+              <div class="rnf-hero-slider__grid">
+                <div class="rnf-hero-slider__text rnf-text-{{ block.settings.text_align }}{% if block.settings.text_bg_enable %} rnf-text-bg{% endif %}" style="--rnf-text-bg-opacity: {{ block.settings.text_bg_opacity | divided_by: 100.0 }};">
+                  {% if block.settings.badge_label != blank %}
+                    <span class="rnf-hero-slider__badge" style="--rnf-badge-color: {{ block.settings.badge_color }};">{{ block.settings.badge_label }}</span>
+                  {% endif %}
+                  {% if block.settings.kicker != blank %}
+                    <p class="rnf-hero-slider__kicker">{{ block.settings.kicker }}</p>
+                  {% endif %}
+                  {% if block.settings.heading != blank %}
+                    <h2 class="rnf-hero-slider__title">{{ block.settings.heading }}</h2>
+                  {% endif %}
+                  {% if block.settings.subheading != blank %}
+                    <div class="rnf-hero-slider__subheading">{{ block.settings.subheading }}</div>
+                  {% endif %}
+                  {% if block.settings.fine_print != blank %}
+                    <div class="rnf-hero-slider__fine-print">{{ block.settings.fine_print }}</div>
+                  {% endif %}
+                  {% if block.settings.button_label != blank %}
+                    <a
+                      class="rnf-hero-slider__button rnf-button-{{ section.settings.button_style }}"
+                      href="{{ block.settings.button_link | default: '#' }}"
+                      {% if block.settings.button_link == blank %}aria-disabled="true" role="link"{% endif %}
+                    >
+                      {{ block.settings.button_label }}
+                    </a>
+                  {% endif %}
+                </div>
+
+                <div class="rnf-hero-slider__art">
+                  {% if block.settings.product_image != blank %}
+                    <img
+                      src="{{ block.settings.product_image | image_url: width: 900 }}"
+                      alt="{{ block.settings.product_image.alt | escape }}"
+                      loading="lazy"
+                      width="{{ block.settings.product_image_width }}"
+                      height="{{ block.settings.product_image_width | times: 1.1 | round }}"
+                      style="width: {{ block.settings.product_image_width }}px;"
+                    >
+                  {% endif %}
+                </div>
+              </div>
+              {% if request.design_mode and bg_desktop == blank %}
+                <p class="rnf-hero-slider__note">Add a desktop background image for this slide.</p>
+              {% endif %}
+              {% if request.design_mode and forloop.first %}
+                <div class="rnf-hero-slider__debug" role="status">
+                  <strong>RNF Debug:</strong>
+                  Desktop BG is {{ debug_bg_status }}.
+                  {% if bg_desktop_url != blank %}
+                    URL: {{ bg_desktop_url | slice: 0, 60 }}{% if bg_desktop_url.size > 60 %}…{% endif %}
+                  {% else %}
+                    URL: n/a
+                  {% endif %}
+                  <br>
+                  Overlay style: {{ section.settings.overlay_style }},
+                  opacity: {{ overlay_alpha }},
+                  background: {{ overlay_background | slice: 0, 60 }}{% if overlay_background.size > 60 %}…{% endif %}
+                </div>
+              {% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+
+      {% if section.settings.show_arrows %}
+        <button class="rnf-hero-slider__arrow rnf-hero-slider__arrow--prev" type="button" data-rnf-prev aria-label="Previous slide">
+          <span aria-hidden="true">&#10094;</span>
+        </button>
+        <button class="rnf-hero-slider__arrow rnf-hero-slider__arrow--next" type="button" data-rnf-next aria-label="Next slide">
+          <span aria-hidden="true">&#10095;</span>
+        </button>
+      {% endif %}
+
+      {% if section.settings.show_dots %}
+        <div class="rnf-hero-slider__dots" role="tablist" aria-label="Slider pagination">
+          {% for block in section.blocks %}
+            <button
+              class="rnf-hero-slider__dot{% if forloop.first %} is-active{% endif %}"
+              type="button"
+              data-rnf-dot
+              data-slide-index="{{ forloop.index0 }}"
+              aria-label="Go to slide {{ forloop.index }}"
+              aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"
+            ></button>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="rnf-hero-slider__empty">
+      <p>Add slides to the RNF Hero Slider section.</p>
+    </div>
+  {% endif %}
+</section>
+
+{%- comment -%}
+  Schema guardrails:
+  - Do not use rgba() defaults for settings with type "color".
+  - Use Liquid color_modify for alpha (see --rnf-dot-color / --rnf-dot-active above).
+  - Build gradients from color settings (avoid invalid color defaults).
+{%- endcomment -%}
+{% schema %}
+{
+  "name": "RNF Hero Slider",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "height_desktop",
+      "min": 420,
+      "max": 820,
+      "step": 10,
+      "unit": "px",
+      "label": "Desktop height",
+      "default": 620
+    },
+    {
+      "type": "range",
+      "id": "height_mobile",
+      "min": 360,
+      "max": 640,
+      "step": 10,
+      "unit": "px",
+      "label": "Mobile height",
+      "default": 480
+    },
+    {
+      "type": "select",
+      "id": "overlay_style",
+      "label": "Overlay style",
+      "default": "solid",
+      "options": [
+        { "value": "solid", "label": "Solid color" },
+        { "value": "gradient", "label": "Gradient" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "overlay_gradient_start",
+      "label": "Gradient start color",
+      "default": "#4A1D74"
+    },
+    {
+      "type": "color",
+      "id": "overlay_gradient_end",
+      "label": "Gradient end color",
+      "default": "#166316"
+    },
+    {
+      "type": "range",
+      "id": "overlay_gradient_angle",
+      "min": 0,
+      "max": 180,
+      "step": 5,
+      "unit": "deg",
+      "label": "Gradient angle",
+      "default": 135
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 70,
+      "step": 1,
+      "unit": "%",
+      "label": "Overlay opacity",
+      "default": 25
+    },
+    {
+      "type": "select",
+      "id": "content_max_width",
+      "label": "Content max width",
+      "default": "1400",
+      "options": [
+        { "value": "1200", "label": "1200px" },
+        { "value": "1400", "label": "1400px" },
+        { "value": "full", "label": "Full width" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show dots",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_seconds",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "label": "Autoplay interval",
+      "default": 6
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_zoom",
+      "label": "Enable Ken Burns zoom",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "zoom_strength",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "label": "Zoom strength",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "transition_speed_ms",
+      "min": 250,
+      "max": 900,
+      "step": 10,
+      "unit": "ms",
+      "label": "Transition speed",
+      "default": 550
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button style",
+      "default": "solid",
+      "options": [
+        { "value": "solid", "label": "Solid" },
+        { "value": "outline", "label": "Outline" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "primary_purple",
+      "label": "Primary purple",
+      "default": "#4A1D74"
+    },
+    {
+      "type": "color",
+      "id": "accent_green",
+      "label": "Accent green",
+      "default": "#166316"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "dot_color",
+      "label": "Dot color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "dot_active_color",
+      "label": "Dot active color",
+      "default": "#FFFFFF"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "bg_image_desktop",
+          "label": "Background image (desktop)"
+        },
+        {
+          "type": "image_picker",
+          "id": "bg_image_mobile",
+          "label": "Background image (mobile)"
+        },
+        {
+          "type": "image_picker",
+          "id": "product_image",
+          "label": "Product image"
+        },
+        {
+          "type": "range",
+          "id": "product_image_width",
+          "min": 240,
+          "max": 560,
+          "step": 10,
+          "unit": "px",
+          "label": "Product image width",
+          "default": 420
+        },
+        {
+          "type": "select",
+          "id": "layout",
+          "label": "Layout",
+          "default": "text_left",
+          "options": [
+            { "value": "text_left", "label": "Text left" },
+            { "value": "text_right", "label": "Text right" }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "text_align",
+          "label": "Text align",
+          "default": "left",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right", "label": "Right" }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "text_position_vertical",
+          "label": "Text vertical position",
+          "default": "middle",
+          "options": [
+            { "value": "top", "label": "Top" },
+            { "value": "middle", "label": "Middle" },
+            { "value": "bottom", "label": "Bottom" }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "text_position_horizontal",
+          "label": "Text horizontal position",
+          "default": "left",
+          "options": [
+            { "value": "left", "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right", "label": "Right" }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "kicker",
+          "label": "Kicker"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "richtext",
+          "id": "subheading",
+          "label": "Subheading"
+        },
+        {
+          "type": "richtext",
+          "id": "fine_print",
+          "label": "Fine print"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link"
+        },
+        {
+          "type": "text",
+          "id": "badge_label",
+          "label": "Badge label"
+        },
+        {
+          "type": "color",
+          "id": "badge_color",
+          "label": "Badge color",
+          "default": "#166316"
+        },
+        {
+          "type": "checkbox",
+          "id": "text_bg_enable",
+          "label": "Enable text background",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "text_bg_opacity",
+          "min": 0,
+          "max": 80,
+          "step": 1,
+          "unit": "%",
+          "label": "Text background opacity",
+          "default": 20
+        }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "RNF Hero Slider",
+      "blocks": [
+        {
+          "type": "slide",
+          "settings": {
+            "kicker": "Bienestar diario",
+            "heading": "Suplementos naturales para tu rutina",
+            "subheading": "<p>Apoya tu estilo de vida con fórmulas de calidad.</p>",
+            "button_label": "Comprar ahora"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
