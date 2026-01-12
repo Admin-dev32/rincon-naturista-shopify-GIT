@@ -3,15 +3,18 @@
   - Avoid comparisons inside assign; use if/endif for Theme Check compatibility.
   - Do not use rgba() defaults for "type":"color" settings in schema.
   - Apply alpha via Liquid filters (color_modify) in style variables.
-  - If using gradient overlays, configure with a non-color setting (text) and validate output.
+  - Build gradients from color settings to keep schema defaults valid.
 {%- endcomment -%}
 {% assign has_slides = false %}
 {% if section.blocks.size > 0 %}
   {% assign has_slides = true %}
 {% endif %}
-{% assign overlay_background = section.settings.overlay_color %}
+{% assign overlay_alpha = section.settings.overlay_opacity | divided_by: 100.0 %}
+{% assign overlay_background = section.settings.overlay_color | color_modify: 'alpha', overlay_alpha %}
 {% if section.settings.overlay_style == 'gradient' %}
-  {% assign overlay_background = section.settings.overlay_gradient %}
+  {% assign overlay_start = section.settings.overlay_gradient_start | color_modify: 'alpha', overlay_alpha %}
+  {% assign overlay_end = section.settings.overlay_gradient_end | color_modify: 'alpha', overlay_alpha %}
+  {% assign overlay_background = "linear-gradient(" | append: section.settings.overlay_gradient_angle | append: "deg, " | append: overlay_start | append: ", " | append: overlay_end | append: ")" %}
 {% endif %}
 
 <section
@@ -24,8 +27,6 @@
   style="
     --rnf-height-desktop: {{ section.settings.height_desktop }}px;
     --rnf-height-mobile: {{ section.settings.height_mobile }}px;
-    --rnf-overlay-color: {{ overlay_background }};
-    --rnf-overlay-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
     --rnf-max-width: {% case section.settings.content_max_width %}{% when '1200' %}1200px{% when '1400' %}1400px{% else %}100%{% endcase %};
     --rnf-primary: {{ section.settings.primary_purple }};
     --rnf-accent: {{ section.settings.accent_green }};
@@ -92,7 +93,7 @@
             <div
               class="rnf-hero-slider__overlay"
               aria-hidden="true"
-              style="background: {{ overlay_background }}; opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};"
+              style="background: {{ overlay_background }};"
             ></div>
             <div class="rnf-hero-slider__content rnf-align-h-{{ block.settings.text_position_horizontal }} rnf-align-v-{{ block.settings.text_position_vertical }} rnf-layout-{{ block.settings.layout }}">
               <div class="rnf-hero-slider__grid">
@@ -190,7 +191,7 @@
   Schema guardrails:
   - Do not use rgba() defaults for settings with type "color".
   - Use Liquid color_modify for alpha (see --rnf-dot-color / --rnf-dot-active above).
-  - Use a text/gradient setting for overlay gradients (avoid invalid color defaults).
+  - Build gradients from color settings (avoid invalid color defaults).
 {%- endcomment -%}
 {% schema %}
 {
@@ -235,11 +236,26 @@
       "default": "#000000"
     },
     {
-      "type": "text",
-      "id": "overlay_gradient",
-      "label": "Overlay gradient",
-      "default": "linear-gradient(135deg, rgba(74,29,116,0.65), rgba(22,99,22,0.55))",
-      "info": "Example: linear-gradient(135deg, rgba(74,29,116,0.65), rgba(22,99,22,0.55))"
+      "type": "color",
+      "id": "overlay_gradient_start",
+      "label": "Gradient start color",
+      "default": "#4A1D74"
+    },
+    {
+      "type": "color",
+      "id": "overlay_gradient_end",
+      "label": "Gradient end color",
+      "default": "#166316"
+    },
+    {
+      "type": "range",
+      "id": "overlay_gradient_angle",
+      "min": 0,
+      "max": 180,
+      "step": 5,
+      "unit": "deg",
+      "label": "Gradient angle",
+      "default": 135
     },
     {
       "type": "range",
