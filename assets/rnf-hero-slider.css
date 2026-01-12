@@ -78,9 +78,8 @@
 .rnf-hero-slider__overlay {
   position: absolute;
   inset: 0;
-  background: var(--rnf-overlay-color);
-  opacity: var(--rnf-overlay-opacity);
   z-index: 1;
+  pointer-events: none;
 }
 
 .rnf-hero-slider__content {
