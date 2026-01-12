@@ -17,9 +17,9 @@
   {% assign default_index = 1 %}
 {% endif %}
 
-<section
+  <section
   id="rnf-collection-tabs-{{ section.id }}"
-  class="rnf-collection-tabs"
+  class="rnf-collection-tabs color-{{ section.settings.color_scheme }}"
   data-rnf-collection-tabs
   data-underline="{{ section.settings.tab_underline_active }}"
   style="
@@ -191,6 +191,12 @@
   "tag": "section",
   "class": "section",
   "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "background-1"
+    },
     {
       "type": "text",
       "id": "heading",

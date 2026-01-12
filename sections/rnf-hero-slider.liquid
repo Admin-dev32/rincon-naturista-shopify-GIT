@@ -58,7 +58,7 @@
           {% assign desktop_ar = bg_desktop.aspect_ratio | default: 1.7778 %}
           {% assign mobile_ar = bg_mobile.aspect_ratio | default: desktop_ar %}
           <li
-            class="rnf-hero-slider__slide{% if forloop.first %} is-active{% endif %}"
+            class="rnf-hero-slider__slide color-{{ block.settings.color_scheme }}{% if forloop.first %} is-active{% endif %}"
             data-rnf-slide
             data-slide-index="{{ forloop.index0 }}"
             {{ block.shopify_attributes }}
@@ -318,6 +318,12 @@
       "type": "slide",
       "name": "Slide",
       "settings": [
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "Slide color scheme",
+          "default": "background-1"
+        },
         {
           "type": "image_picker",
           "id": "bg_image_desktop",
