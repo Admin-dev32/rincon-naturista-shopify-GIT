@@ -1,0 +1,327 @@
+{%- comment -%}
+  RNF Interactive Hotspots
+  - Add hotspot blocks to place interactive points on the image.
+{%- endcomment -%}
+
+{% assign hotspot_count = 0 %}
+{% for block in section.blocks %}
+  {% if block.type == 'hotspot' %}
+    {% assign hotspot_count = hotspot_count | plus: 1 %}
+  {% endif %}
+{% endfor %}
+
+{% assign default_index = section.settings.default_active_index | default: 1 %}
+{% if default_index < 1 %}
+  {% assign default_index = 1 %}
+{% elsif hotspot_count > 0 and default_index > hotspot_count %}
+  {% assign default_index = hotspot_count %}
+{% endif %}
+
+<section
+  id="rnf-hotspots-{{ section.id }}"
+  class="rnf-hotspots color-{{ section.settings.color_scheme }}"
+  data-rnf-hotspots
+  data-section-id="{{ section.id }}"
+  data-default-index="{{ default_index }}"
+  style="--rnf-gap: {{ section.settings.layout_gap }}px;"
+>
+  {{ 'rnf-hotspots.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'rnf-hotspots.js' | asset_url }}" defer></script>
+
+  <div class="rnf-hotspots__container">
+    <div class="rnf-hotspots__header">
+      {% if section.settings.heading_small != blank %}
+        <p class="rnf-hotspots__kicker">{{ section.settings.heading_small }}</p>
+      {% endif %}
+      {% if section.settings.heading_main != blank %}
+        <h2 class="rnf-hotspots__title">{{ section.settings.heading_main }}</h2>
+      {% endif %}
+    </div>
+
+    <div class="rnf-hotspots__layout">
+      <div class="rnf-hotspots__media">
+        {% if section.settings.left_image_desktop != blank %}
+          <picture>
+            {% if section.settings.left_image_mobile != blank %}
+              <source media="(max-width: 749px)" srcset="{{ section.settings.left_image_mobile | image_url: width: 1200 }}">
+            {% endif %}
+            <img
+              src="{{ section.settings.left_image_desktop | image_url: width: 1800 }}"
+              alt="{{ section.settings.left_image_desktop.alt | escape }}"
+              loading="lazy"
+            >
+          </picture>
+        {% elsif request.design_mode %}
+          <div class="rnf-hotspots__placeholder">
+            <span>Selecciona una imagen principal</span>
+          </div>
+        {% endif %}
+
+        {% assign hotspot_index = 0 %}
+        {% for block in section.blocks %}
+          {% if block.type == 'hotspot' %}
+            {% assign hotspot_index = hotspot_index | plus: 1 %}
+            {% assign label = block.settings.label | default: 'Hotspot' %}
+            <button
+              type="button"
+              class="rnf-hotspots__dot{% if hotspot_index == default_index %} is-active{% endif %}"
+              style="left: {{ block.settings.x_percent }}%; top: {{ block.settings.y_percent }}%;"
+              data-rnf-hotspot
+              data-index="{{ hotspot_index }}"
+              aria-label="{{ label }}"
+              aria-controls="rnf-hotspots-panel-{{ section.id }}-{{ hotspot_index }}"
+              {% if hotspot_index == default_index %}aria-selected="true"{% else %}aria-selected="false"{% endif %}
+              {{ block.shopify_attributes }}
+            >
+              <span class="rnf-hotspots__dot-inner"></span>
+            </button>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <div class="rnf-hotspots__content rnf-align-{{ section.settings.content_align }}">
+        {% if hotspot_count == 0 and request.design_mode %}
+          <div class="rnf-hotspots__empty">
+            <p>RNF Hotspots: agrega bloques y selecciona productos.</p>
+          </div>
+        {% endif %}
+
+        {% assign panel_index = 0 %}
+        {% for block in section.blocks %}
+          {% if block.type == 'hotspot' %}
+            {% assign panel_index = panel_index | plus: 1 %}
+            {% assign product = block.settings.product %}
+            {% assign panel_title = block.settings.title_override | default: product.title %}
+            {% assign panel_image = block.settings.featured_image_override | default: product.featured_image %}
+            <div
+              class="rnf-hotspots__panel{% if panel_index == default_index %} is-active{% endif %} color-{{ block.settings.color_scheme }}"
+              id="rnf-hotspots-panel-{{ section.id }}-{{ panel_index }}"
+              data-rnf-panel
+              data-index="{{ panel_index }}"
+              {% unless panel_index == default_index %}hidden{% endunless %}
+            >
+              {% if panel_image != blank %}
+                <div class="rnf-hotspots__panel-image">
+                  <img
+                    src="{{ panel_image | image_url: width: 700 }}"
+                    alt="{{ panel_image.alt | escape }}"
+                    loading="lazy"
+                  >
+                </div>
+              {% endif %}
+
+              <div class="rnf-hotspots__panel-body">
+                {% if block.settings.subtitle != blank %}
+                  <p class="rnf-hotspots__subtitle">{{ block.settings.subtitle }}</p>
+                {% endif %}
+                {% if panel_title != blank %}
+                  <h3 class="rnf-hotspots__panel-title">{{ panel_title }}</h3>
+                {% endif %}
+
+                {% if block.settings.show_price and product != blank %}
+                  <div class="rnf-hotspots__price">
+                    <span class="rnf-hotspots__price-current">{{ product.price | money }}</span>
+                    {% if block.settings.show_compare_at and product.compare_at_price > product.price %}
+                      <span class="rnf-hotspots__price-compare">{{ product.compare_at_price | money }}</span>
+                    {% endif %}
+                  </div>
+                {% endif %}
+
+                <div class="rnf-hotspots__actions">
+                  {% if product != blank %}
+                    <a class="rnf-hotspots__button rnf-hotspots__button--primary" href="{{ product.url }}">
+                      {{ block.settings.button_add_text }}
+                    </a>
+                    <a class="rnf-hotspots__button rnf-hotspots__button--secondary" href="{{ product.url }}">
+                      {{ block.settings.button_view_text }}
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        {% if section.settings.show_dots and hotspot_count > 0 %}
+          <div class="rnf-hotspots__pagination" role="tablist" aria-label="Hotspot pagination">
+            {% for i in (1..hotspot_count) %}
+              <button
+                type="button"
+                class="rnf-hotspots__pagination-dot{% if i == default_index %} is-active{% endif %}"
+                data-rnf-dot
+                data-index="{{ i }}"
+                aria-label="Go to hotspot {{ i }}"
+                {% if i == default_index %}aria-selected="true"{% else %}aria-selected="false"{% endif %}
+              ></button>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "RNF Interactive Hotspots",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading_small",
+      "label": "Small heading",
+      "default": "CUIDA TU CUERPO"
+    },
+    {
+      "type": "text",
+      "id": "heading_main",
+      "label": "Main heading",
+      "default": "CMD Cuidamos tu Salud Naturalmente"
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image_desktop",
+      "label": "Left image (desktop)"
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image_mobile",
+      "label": "Left image (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "layout_gap",
+      "label": "Layout gap",
+      "min": 12,
+      "max": 80,
+      "step": 4,
+      "default": 48
+    },
+    {
+      "type": "select",
+      "id": "content_align",
+      "label": "Content align",
+      "default": "center",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ]
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "background-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show dots",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "default_active_index",
+      "label": "Default active index",
+      "min": 1,
+      "max": 12,
+      "step": 1,
+      "default": 1
+    }
+  ],
+  "blocks": [
+    {
+      "type": "hotspot",
+      "name": "Hotspot",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label"
+        },
+        {
+          "type": "range",
+          "id": "x_percent",
+          "label": "X position",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 50,
+          "unit": "%"
+        },
+        {
+          "type": "range",
+          "id": "y_percent",
+          "label": "Y position",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "default": 50,
+          "unit": "%"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "text",
+          "id": "title_override",
+          "label": "Title override"
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "label": "Subtitle"
+        },
+        {
+          "type": "text",
+          "id": "button_add_text",
+          "label": "Add button text",
+          "default": "AGREGAR"
+        },
+        {
+          "type": "text",
+          "id": "button_view_text",
+          "label": "View button text",
+          "default": "VER ESTE PRODUCTO"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_price",
+          "label": "Show price",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_compare_at",
+          "label": "Show compare at price",
+          "default": true
+        },
+        {
+          "type": "image_picker",
+          "id": "featured_image_override",
+          "label": "Featured image override"
+        },
+        {
+          "type": "color_scheme",
+          "id": "color_scheme",
+          "label": "Panel color scheme",
+          "default": "background-1"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "RNF Interactive Hotspots",
+      "blocks": [
+        { "type": "hotspot" },
+        { "type": "hotspot" },
+        { "type": "hotspot" }
+      ]
+    }
+  ]
+}
+{% endschema %}
