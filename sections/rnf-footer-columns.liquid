@@ -1,0 +1,343 @@
+{%- comment -%}
+  RNF Footer Columns
+  - Add footer_column blocks for center columns.
+  - Add payment_icon blocks for custom payment icons.
+{%- endcomment -%}
+
+{% assign column_blocks = section.blocks | where: 'type', 'footer_column' %}
+{% assign payment_blocks = section.blocks | where: 'type', 'payment_icon' %}
+
+<section
+  class="rnf-footer color-{{ section.settings.color_scheme }} rnf-footer--{{ section.settings.container_width }}"
+  style="padding-top: {{ section.settings.top_padding }}px; padding-bottom: {{ section.settings.bottom_padding }}px;"
+>
+  {{ 'rnf-footer-columns.css' | asset_url | stylesheet_tag }}
+
+  <div class="rnf-footer__container">
+    <div class="rnf-footer__grid">
+      <div class="rnf-footer__brand">
+        {% if section.settings.brand_logo_1 != blank %}
+          <img
+            class="rnf-footer__logo"
+            src="{{ section.settings.brand_logo_1 | image_url: width: 440 }}"
+            alt="{{ section.settings.brand_logo_1.alt | escape }}"
+            style="width: {{ section.settings.brand_logo_1_width }}px;"
+            loading="lazy"
+          >
+        {% endif %}
+        {% if section.settings.brand_logo_2 != blank %}
+          <img
+            class="rnf-footer__logo"
+            src="{{ section.settings.brand_logo_2 | image_url: width: 440 }}"
+            alt="{{ section.settings.brand_logo_2.alt | escape }}"
+            style="width: {{ section.settings.brand_logo_2_width }}px;"
+            loading="lazy"
+          >
+        {% endif %}
+        {% if section.settings.brand_text != blank %}
+          <div class="rnf-footer__brand-text">{{ section.settings.brand_text }}</div>
+        {% endif %}
+      </div>
+
+      {% for block in column_blocks %}
+        <div class="rnf-footer__column" {{ block.shopify_attributes }}>
+          {% if block.settings.heading != blank %}
+            <h3 class="rnf-footer__heading">{{ block.settings.heading }}</h3>
+          {% endif %}
+          {% if block.settings.content_richtext != blank %}
+            <div class="rnf-footer__richtext">{{ block.settings.content_richtext }}</div>
+          {% endif %}
+          {% if block.settings.menu != blank %}
+            <ul class="rnf-footer__links">
+              {% for link in block.settings.menu.links limit: block.settings.max_links %}
+                <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+      <div class="rnf-footer__newsletter">
+        {% if section.settings.newsletter_heading != blank %}
+          <h3 class="rnf-footer__heading">{{ section.settings.newsletter_heading }}</h3>
+        {% endif %}
+        {% if section.settings.newsletter_text != blank %}
+          <p class="rnf-footer__text">{{ section.settings.newsletter_text }}</p>
+        {% endif %}
+        {% form 'customer', class: 'rnf-footer__form' %}
+          <input type="hidden" name="contact[tags]" value="newsletter">
+          <div class="rnf-footer__form-row">
+            <input
+              type="email"
+              name="contact[email]"
+              class="rnf-footer__input"
+              placeholder="Email"
+              required
+              autocomplete="email"
+            >
+            <button type="submit" class="rnf-footer__button">
+              {{ section.settings.newsletter_button_text }}
+            </button>
+          </div>
+          {% if form.posted_successfully? %}
+            <p class="rnf-footer__form-message">Gracias por suscribirte.</p>
+          {% elsif form.errors %}
+            <p class="rnf-footer__form-message">{{ form.errors | default_errors }}</p>
+          {% endif %}
+        {% endform %}
+      </div>
+    </div>
+
+    <div class="rnf-footer__bottom">
+      {% if section.settings.show_social %}
+        <div class="rnf-footer__social">
+          {% if section.settings.social_facebook != blank %}
+            <a href="{{ section.settings.social_facebook }}" aria-label="Facebook">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.117 8.667h2.216V5.333h-2.216c-2.37 0-3.784 1.49-3.784 3.7v1.3H9v3.334h2.333V22h3.334v-8.333h2.333l.55-3.334h-2.883v-1.3c0-.73.35-1.033 1.45-1.033Z"/></svg>
+            </a>
+          {% endif %}
+          {% if section.settings.social_instagram != blank %}
+            <a href="{{ section.settings.social_instagram }}" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7.5 3h9A4.5 4.5 0 0 1 21 7.5v9A4.5 4.5 0 0 1 16.5 21h-9A4.5 4.5 0 0 1 3 16.5v-9A4.5 4.5 0 0 1 7.5 3Zm9 1.5h-9A3 3 0 0 0 4.5 7.5v9A3 3 0 0 0 7.5 19.5h9a3 3 0 0 0 3-3v-9a3 3 0 0 0-3-3Zm-4.5 3.5a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm0 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Zm5.25-.9a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8Z"/></svg>
+            </a>
+          {% endif %}
+          {% if section.settings.social_tiktok != blank %}
+            <a href="{{ section.settings.social_tiktok }}" aria-label="TikTok">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.5 3c.3 2.2 1.8 3.8 4 4v2.6c-1.8.1-3.5-.5-4.9-1.6v6.7c0 3.4-2.8 6.1-6.2 6.1A6.1 6.1 0 0 1 3.3 14c0-3.4 2.8-6.1 6.2-6.1.6 0 1.1.1 1.6.2v2.9a3.5 3.5 0 0 0-1.6-.4 3.3 3.3 0 1 0 3.3 3.3V3h2.7Z"/></svg>
+            </a>
+          {% endif %}
+          {% if section.settings.social_youtube != blank %}
+            <a href="{{ section.settings.social_youtube }}" aria-label="YouTube">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.5 12 4.5 12 4.5s-5.7 0-7.5.6A3 3 0 0 0 2.4 7.2 31.5 31.5 0 0 0 1.8 12a31.5 31.5 0 0 0 .6 4.8 3 3 0 0 0 2.1 2.1c1.8.6 7.5.6 7.5.6s5.7 0 7.5-.6a3 3 0 0 0 2.1-2.1 31.5 31.5 0 0 0 .6-4.8 31.5 31.5 0 0 0-.6-4.8ZM10.2 14.7V9.3l4.8 2.7-4.8 2.7Z"/></svg>
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if section.settings.show_payments %}
+        <div class="rnf-footer__payments">
+          {% if shop.enabled_payment_types != blank %}
+            {% for type in shop.enabled_payment_types %}
+              {{ type | payment_type_svg_tag: class: 'rnf-footer__payment-icon' }}
+            {% endfor %}
+          {% endif %}
+          {% for block in payment_blocks %}
+            {% if block.settings.icon_image != blank %}
+              {% if block.settings.link != blank %}
+                <a href="{{ block.settings.link }}" class="rnf-footer__payment-link" {{ block.shopify_attributes }}>
+                  <img
+                    src="{{ block.settings.icon_image | image_url: width: 120 }}"
+                    alt="{{ block.settings.alt | escape }}"
+                    class="rnf-footer__payment-icon"
+                    loading="lazy"
+                  >
+                </a>
+              {% else %}
+                <img
+                  src="{{ block.settings.icon_image | image_url: width: 120 }}"
+                  alt="{{ block.settings.alt | escape }}"
+                  class="rnf-footer__payment-icon"
+                  loading="lazy"
+                  {{ block.shopify_attributes }}
+                >
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "RNF Footer Columns",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "background-1"
+    },
+    {
+      "type": "range",
+      "id": "top_padding",
+      "label": "Top padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "bottom_padding",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "default": 40
+    },
+    {
+      "type": "select",
+      "id": "container_width",
+      "label": "Container width",
+      "default": "wide",
+      "options": [
+        { "value": "narrow", "label": "Narrow" },
+        { "value": "normal", "label": "Normal" },
+        { "value": "wide", "label": "Wide" }
+      ]
+    },
+    {
+      "type": "image_picker",
+      "id": "brand_logo_1",
+      "label": "Brand logo 1"
+    },
+    {
+      "type": "range",
+      "id": "brand_logo_1_width",
+      "label": "Brand logo 1 width",
+      "min": 80,
+      "max": 220,
+      "step": 10,
+      "default": 140
+    },
+    {
+      "type": "image_picker",
+      "id": "brand_logo_2",
+      "label": "Brand logo 2"
+    },
+    {
+      "type": "range",
+      "id": "brand_logo_2_width",
+      "label": "Brand logo 2 width",
+      "min": 80,
+      "max": 220,
+      "step": 10,
+      "default": 140
+    },
+    {
+      "type": "richtext",
+      "id": "brand_text",
+      "label": "Brand text"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_heading",
+      "label": "Newsletter heading",
+      "default": "¡SUSCRÍBETE A NUESTRO NEWSLETTER!"
+    },
+    {
+      "type": "textarea",
+      "id": "newsletter_text",
+      "label": "Newsletter text",
+      "default": "Suscríbete para recibir noticias, información sobre lanzamientos, promociones exclusivas y más."
+    },
+    {
+      "type": "text",
+      "id": "newsletter_button_text",
+      "label": "Newsletter button text",
+      "default": "ENVIAR"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social",
+      "label": "Show social",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payments",
+      "label": "Show payments",
+      "default": true
+    },
+    {
+      "type": "url",
+      "id": "social_facebook",
+      "label": "Facebook URL"
+    },
+    {
+      "type": "url",
+      "id": "social_instagram",
+      "label": "Instagram URL"
+    },
+    {
+      "type": "url",
+      "id": "social_tiktok",
+      "label": "TikTok URL"
+    },
+    {
+      "type": "url",
+      "id": "social_youtube",
+      "label": "YouTube URL"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "footer_column",
+      "name": "Footer column",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "richtext",
+          "id": "content_richtext",
+          "label": "Rich text"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu"
+        },
+        {
+          "type": "range",
+          "id": "max_links",
+          "label": "Max links",
+          "min": 2,
+          "max": 12,
+          "step": 1,
+          "default": 6
+        }
+      ]
+    },
+    {
+      "type": "payment_icon",
+      "name": "Payment icon",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon_image",
+          "label": "Icon image"
+        },
+        {
+          "type": "text",
+          "id": "alt",
+          "label": "Alt text"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "RNF Footer Columns",
+      "blocks": [
+        { "type": "footer_column", "settings": { "heading": "Dirección" } },
+        { "type": "footer_column", "settings": { "heading": "Tienda" } },
+        { "type": "footer_column", "settings": { "heading": "Nosotros" } },
+        { "type": "payment_icon" },
+        { "type": "payment_icon" }
+      ]
+    }
+  ]
+}
+{% endschema %}
