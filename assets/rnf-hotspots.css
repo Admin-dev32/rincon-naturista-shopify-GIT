@@ -22,7 +22,7 @@
 }
 
 .rnf-hotspots__title {
-  margin: 0 0 40px;
+  margin: 0;
   font-size: clamp(30px, 3vw, 44px);
   font-weight: 800;
   line-height: 1.15;
@@ -30,12 +30,15 @@
 
 .rnf-hotspots__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   gap: var(--rnf-gap, 48px);
   align-items: center;
 }
 
 .rnf-hotspots__media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
   border-radius: 16px;
   overflow: hidden;
@@ -96,6 +99,8 @@
   flex-direction: column;
   gap: 24px;
   text-align: center;
+  align-items: center;
+  justify-content: center;
 }
 
 .rnf-hotspots__content.rnf-align-left {
@@ -111,6 +116,7 @@
 .rnf-hotspots__panel {
   display: none;
   width: 100%;
+  margin: 0;
 }
 
 .rnf-hotspots__panel.is-active {
@@ -241,6 +247,12 @@
   .rnf-hotspots__layout {
     grid-template-columns: 1fr;
     gap: 32px;
+    align-items: stretch;
+  }
+
+  .rnf-hotspots__content {
+    justify-content: flex-start;
+    padding-top: 18px;
   }
 
   .rnf-hotspots__panel-image {
