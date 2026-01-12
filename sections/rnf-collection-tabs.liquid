@@ -1,0 +1,342 @@
+{%- comment -%}
+  RNF Collection Tabs
+  - Add blocks to create tabs, each block = one collection.
+{%- endcomment -%}
+
+{% assign valid_count = 0 %}
+{% for block in section.blocks %}
+  {% if block.settings.collection != blank %}
+    {% assign valid_count = valid_count | plus: 1 %}
+  {% endif %}
+{% endfor %}
+
+{% assign default_index = section.settings.default_collection_index | default: 1 %}
+{% if valid_count < 1 %}
+  {% assign default_index = 1 %}
+{% elsif default_index < 1 or default_index > valid_count %}
+  {% assign default_index = 1 %}
+{% endif %}
+
+<section
+  id="rnf-collection-tabs-{{ section.id }}"
+  class="rnf-collection-tabs"
+  data-rnf-collection-tabs
+  data-underline="{{ section.settings.tab_underline_active }}"
+  style="
+    --rnf-columns-desktop: {{ section.settings.columns_desktop }};
+    --rnf-columns-mobile: {{ section.settings.columns_mobile }};
+  "
+>
+  {{ 'rnf-collection-tabs.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'rnf-collection-tabs.js' | asset_url }}" defer></script>
+
+  <div class="rnf-collection-tabs__container">
+    {% if section.settings.heading != blank %}
+      <div class="rnf-collection-tabs__heading">
+        <h2>{{ section.settings.heading }}</h2>
+      </div>
+    {% endif %}
+
+    <div class="rnf-collection-tabs__tablist-wrapper">
+      <div
+        class="rnf-collection-tabs__tablist rnf-align-{{ section.settings.tabs_alignment }}"
+        role="tablist"
+        aria-label="Collection tabs"
+        data-rnf-tabs
+        {% if section.settings.enable_swipe_tabs %}data-rnf-swipe-tabs{% endif %}
+      >
+        {% assign tab_index = 0 %}
+        {% for block in section.blocks %}
+          {% assign collection = block.settings.collection %}
+          {% if collection != blank %}
+            {% assign tab_index = tab_index | plus: 1 %}
+            {% assign tab_label = block.settings.tab_label | default: collection.title %}
+            <button
+              class="rnf-collection-tabs__tab{% if tab_index == default_index %} is-active{% endif %}"
+              type="button"
+              role="tab"
+              aria-selected="{% if tab_index == default_index %}true{% else %}false{% endif %}"
+              aria-controls="rnf-collection-tabpanel-{{ section.id }}-{{ tab_index }}"
+              id="rnf-collection-tab-{{ section.id }}-{{ tab_index }}"
+              data-rnf-tab
+              data-rnf-tab-index="{{ tab_index }}"
+              {{ block.shopify_attributes }}
+            >
+              {{ tab_label }}
+            </button>
+          {% else %}
+            {% assign tab_label = block.settings.tab_label | default: 'Select a collection' %}
+            <button
+              class="rnf-collection-tabs__tab"
+              type="button"
+              aria-disabled="true"
+              {{ block.shopify_attributes }}
+            >
+              {{ tab_label }}
+            </button>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="rnf-collection-tabs__panels">
+      {% if valid_count > 0 %}
+        {% assign panel_index = 0 %}
+        {% for block in section.blocks %}
+          {% assign collection = block.settings.collection %}
+          {% if collection != blank %}
+            {% assign panel_index = panel_index | plus: 1 %}
+            {% assign is_active_panel = false %}
+            {% if panel_index == default_index %}
+              {% assign is_active_panel = true %}
+            {% endif %}
+            {% assign sort = block.settings.sort %}
+            {% assign products_list = collection.products %}
+            {% if sort == 'price_low_high' %}
+              {% assign products_list = products_list | sort: 'price' %}
+            {% elsif sort == 'price_high_low' %}
+              {% assign products_list = products_list | sort: 'price' | reverse %}
+            {% elsif sort == 'newest' %}
+              {% assign products_list = products_list | sort: 'published_at' | reverse %}
+            {% endif %}
+
+            <div
+              class="rnf-collection-tabs__panel{% if is_active_panel %} is-active{% endif %}"
+              role="tabpanel"
+              id="rnf-collection-tabpanel-{{ section.id }}-{{ panel_index }}"
+              aria-labelledby="rnf-collection-tab-{{ section.id }}-{{ panel_index }}"
+              {% unless is_active_panel %}hidden{% endunless %}
+              data-rnf-panel
+              data-rnf-panel-index="{{ panel_index }}"
+            >
+              <div class="rnf-collection-tabs__grid">
+                {% for product in products_list limit: section.settings.products_limit %}
+                  {% assign primary_media = product.featured_media %}
+                  {% assign secondary_media = product.media[1] %}
+                  <article class="rnf-collection-tabs__card">
+                    {% if section.settings.show_badges %}
+                      {% if product.available == false %}
+                        <span class="rnf-collection-tabs__badge">Agotado</span>
+                      {% elsif product.compare_at_price > product.price %}
+                        <span class="rnf-collection-tabs__badge">Oferta</span>
+                      {% endif %}
+                    {% endif %}
+                    <a class="rnf-collection-tabs__card-image" href="{{ product.url }}">
+                      <div class="rnf-collection-tabs__media">
+                        {% if primary_media != blank %}
+                          <img
+                            class="is-primary"
+                            src="{{ primary_media | image_url: width: 600 }}"
+                            alt="{{ primary_media.alt | escape }}"
+                            loading="lazy"
+                            width="600"
+                            height="{{ 600 | divided_by: primary_media.aspect_ratio | round }}"
+                          >
+                        {% endif %}
+                        {% if secondary_media != blank and secondary_media.media_type == 'image' %}
+                          <img
+                            class="is-secondary"
+                            src="{{ secondary_media | image_url: width: 600 }}"
+                            alt="{{ secondary_media.alt | escape }}"
+                            loading="lazy"
+                            width="600"
+                            height="{{ 600 | divided_by: secondary_media.aspect_ratio | round }}"
+                          >
+                        {% endif %}
+                      </div>
+                    </a>
+                    <div class="rnf-collection-tabs__card-content">
+                      <h3 class="rnf-collection-tabs__card-title">
+                        <a href="{{ product.url }}">{{ product.title }}</a>
+                      </h3>
+                      {% if section.settings.show_vendor %}
+                        <p class="rnf-collection-tabs__card-vendor">{{ product.vendor }}</p>
+                      {% endif %}
+                      {% if section.settings.show_price %}
+                        <div class="rnf-collection-tabs__card-price">
+                          <span class="rnf-collection-tabs__price">{{ product.price | money }}</span>
+                          {% if section.settings.show_compare_at_price and product.compare_at_price > product.price %}
+                            <span class="rnf-collection-tabs__compare">{{ product.compare_at_price | money }}</span>
+                          {% endif %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </article>
+                {% endfor %}
+              </div>
+
+              <div class="rnf-collection-tabs__footer">
+                <a
+                  class="rnf-collection-tabs__button rnf-button-{{ section.settings.button_style }}"
+                  href="{{ collection.url }}"
+                >
+                  {{ section.settings.button_text }}
+                </a>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% elsif request.design_mode %}
+        <div class="rnf-collection-tabs__empty">
+          <p>RNF Collection Tabs: Add blocks and select a collection in each block.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "RNF Collection Tabs",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Explora colecciones"
+    },
+    {
+      "type": "range",
+      "id": "default_collection_index",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "label": "Default tab index",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "products_limit",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "label": "Products limit",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "Columns desktop",
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columns mobile",
+      "default": "2",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Show price",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_compare_at_price",
+      "label": "Show compare at price",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badges",
+      "label": "Show sale / sold out badges",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "See more"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button style",
+      "default": "primary",
+      "options": [
+        { "value": "primary", "label": "Primary" },
+        { "value": "secondary", "label": "Secondary" },
+        { "value": "link", "label": "Link" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_swipe_tabs",
+      "label": "Enable swipe tabs",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "tabs_alignment",
+      "label": "Tabs alignment",
+      "default": "left",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "tab_underline_active",
+      "label": "Underline active tab",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "tab",
+      "name": "Collection tab",
+      "settings": [
+        {
+          "type": "text",
+          "id": "tab_label",
+          "label": "Tab label"
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "select",
+          "id": "sort",
+          "label": "Sort",
+          "default": "collection_default",
+          "options": [
+            { "value": "collection_default", "label": "Collection default" },
+            { "value": "best_selling", "label": "Best selling" },
+            { "value": "newest", "label": "Newest" },
+            { "value": "price_low_high", "label": "Price low to high" },
+            { "value": "price_high_low", "label": "Price high to low" }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "RNF Collection Tabs",
+      "blocks": [
+        { "type": "tab" },
+        { "type": "tab" }
+      ]
+    }
+  ]
+}
+{% endschema %}
