@@ -9,14 +9,6 @@
 {% if section.blocks.size > 0 %}
   {% assign has_slides = true %}
 {% endif %}
-{% assign overlay_alpha = section.settings.overlay_opacity | divided_by: 100.0 %}
-{% assign overlay_background = section.settings.overlay_color %}
-{% assign overlay_style_attr = "background-color: " | append: section.settings.overlay_color | append: "; opacity: " | append: overlay_alpha | append: ";" %}
-{% if section.settings.overlay_style == 'gradient' %}
-  {% assign overlay_background = "linear-gradient(" | append: section.settings.overlay_gradient_angle | append: "deg, " | append: section.settings.overlay_gradient_start | append: ", " | append: section.settings.overlay_gradient_end | append: ")" %}
-  {% assign overlay_style_attr = "background-image: " | append: overlay_background | append: "; opacity: " | append: overlay_alpha | append: ";" %}
-{% endif %}
-
 <section
   id="rnf-hero-slider-{{ section.id }}"
   class="rnf-hero-slider"
@@ -52,11 +44,23 @@
           {% assign bg_mobile_style = '' %}
           {% assign bg_desktop_url = '' %}
           {% assign bg_mobile_url = '' %}
-          {% assign debug_bg_status = 'blank' %}
           {% assign bg_fit = block.settings.bg_fit | default: 'cover' %}
           {% assign bg_fit_mobile = block.settings.bg_fit_mobile | default: bg_fit %}
+          {% assign slide_overlay_style = section.settings.overlay_style %}
+          {% assign slide_overlay_opacity = section.settings.overlay_opacity | divided_by: 100.0 %}
+          {% assign slide_overlay_bg = section.settings.overlay_color %}
+          {% if section.settings.overlay_style == 'gradient' %}
+            {% assign slide_overlay_bg = "linear-gradient(" | append: section.settings.overlay_gradient_angle | append: "deg, " | append: section.settings.overlay_gradient_start | append: ", " | append: section.settings.overlay_gradient_end | append: ")" %}
+          {% endif %}
+          {% if block.settings.use_custom_overlay %}
+            {% assign slide_overlay_style = block.settings.overlay_style %}
+            {% assign slide_overlay_opacity = block.settings.overlay_opacity | divided_by: 100.0 %}
+            {% assign slide_overlay_bg = block.settings.overlay_color %}
+            {% if block.settings.overlay_style == 'gradient' %}
+              {% assign slide_overlay_bg = "linear-gradient(" | append: block.settings.overlay_gradient_angle | append: "deg, " | append: block.settings.overlay_gradient_start | append: ", " | append: block.settings.overlay_gradient_end | append: ")" %}
+            {% endif %}
+          {% endif %}
           {% if bg_desktop != blank %}
-            {% assign debug_bg_status = 'set' %}
             {% assign bg_desktop_url = bg_desktop | image_url: width: 2400 %}
             {% assign bg_desktop_style = "url('" | append: bg_desktop_url | append: "')" %}
           {% else %}
@@ -73,6 +77,7 @@
             data-rnf-slide
             data-slide-index="{{ forloop.index0 }}"
             {{ block.shopify_attributes }}
+            style="--rnf-overlay-bg: {{ slide_overlay_bg }}; --rnf-overlay-opacity: {{ slide_overlay_opacity }};"
           >
             <div
               class="rnf-hero-slider__media rnf-fit-{{ bg_fit }} rnf-fit-mobile-{{ bg_fit_mobile }}"
@@ -95,7 +100,6 @@
             <div
               class="rnf-hero-slider__overlay"
               aria-hidden="true"
-              style="{{ overlay_style_attr }}"
             ></div>
             <div class="rnf-hero-slider__content rnf-align-h-{{ block.settings.text_position_horizontal }} rnf-align-v-{{ block.settings.text_position_vertical }} rnf-layout-{{ block.settings.layout }}">
               <div class="rnf-hero-slider__grid">
@@ -139,24 +143,6 @@
                   {% endif %}
                 </div>
               </div>
-              {% if request.design_mode and bg_desktop == blank %}
-                <p class="rnf-hero-slider__note">Add a desktop background image for this slide.</p>
-              {% endif %}
-              {% if request.design_mode and forloop.first %}
-                <div class="rnf-hero-slider__debug" role="status">
-                  <strong>RNF Debug:</strong>
-                  Desktop BG is {{ debug_bg_status }}.
-                  {% if bg_desktop_url != blank %}
-                    URL: {{ bg_desktop_url | slice: 0, 60 }}{% if bg_desktop_url.size > 60 %}…{% endif %}
-                  {% else %}
-                    URL: n/a
-                  {% endif %}
-                  <br>
-                  Overlay style: {{ section.settings.overlay_style }},
-                  opacity: {{ overlay_alpha }},
-                  background: {{ overlay_background | slice: 0, 60 }}{% if overlay_background.size > 60 %}…{% endif %}
-                </div>
-              {% endif %}
             </div>
           </li>
         {% endfor %}
@@ -426,6 +412,60 @@
             { "value": "contain", "label": "Contain (fit inside)" },
             { "value": "auto", "label": "Actual size" }
           ]
+        },
+        {
+          "type": "checkbox",
+          "id": "use_custom_overlay",
+          "label": "Use custom overlay for this slide",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "overlay_style",
+          "label": "Overlay style",
+          "default": "solid",
+          "options": [
+            { "value": "solid", "label": "Solid color" },
+            { "value": "gradient", "label": "Gradient" }
+          ]
+        },
+        {
+          "type": "color",
+          "id": "overlay_color",
+          "label": "Overlay color",
+          "default": "#000000"
+        },
+        {
+          "type": "color",
+          "id": "overlay_gradient_start",
+          "label": "Gradient start color",
+          "default": "#4A1D74"
+        },
+        {
+          "type": "color",
+          "id": "overlay_gradient_end",
+          "label": "Gradient end color",
+          "default": "#166316"
+        },
+        {
+          "type": "range",
+          "id": "overlay_gradient_angle",
+          "min": 0,
+          "max": 180,
+          "step": 5,
+          "unit": "deg",
+          "label": "Gradient angle",
+          "default": 135
+        },
+        {
+          "type": "range",
+          "id": "overlay_opacity",
+          "min": 0,
+          "max": 70,
+          "step": 1,
+          "unit": "%",
+          "label": "Overlay opacity",
+          "default": 25
         },
         {
           "type": "image_picker",
