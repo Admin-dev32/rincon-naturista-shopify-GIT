@@ -53,18 +53,21 @@
   margin: 0 0 0.5rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
 }
 
 .rnf-slideshow__heading {
   margin: 0 0 0.75rem;
-  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-size: clamp(2.4rem, 4.8vw, 3.6rem);
   line-height: 1.1;
+  text-shadow: 0 3px 16px rgba(0, 0, 0, 0.5);
 }
 
 .rnf-slideshow__subheading {
   margin: 0 0 1.5rem;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
 }
 
 .rnf-slideshow__cta {
