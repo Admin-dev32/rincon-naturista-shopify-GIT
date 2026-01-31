@@ -88,6 +88,13 @@
   text-align: center;
 }
 
+.rnf-align-center .rnf-slideshow__content-inner {
+  text-align: center;
+}
+
+.rnf-align-center .rnf-slideshow__cta {
+  margin: 0 auto;
+}
 .rnf-align-right {
   justify-content: flex-end;
   text-align: right;
